@@ -11,6 +11,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Set;
+import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
 
 public class AbnAmroFxTradeClient {
     private AbnAmroAccessToken currentAccessToken;
@@ -58,6 +59,21 @@ public class AbnAmroFxTradeClient {
 
     public Set<String> getSettlementAccountGroups() throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/settlementaccountgroups");
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                                         .setHeader("Authorization", getAccessToken().toString())
+                                         .setHeader("Accept", "application/json")
+                                         .setHeader("API-Key", secretManager.getApiKey())
+                                         .GET()
+                                         .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return objectMapper.readValue(response.body(), new TypeReference<>(){});
+    }
+
+    public Set<IndicativeRate> getIndicativeRates(Set<String> currencyPairs, String fxRateTenor) throws InterruptedException, IOException {
+        URI uri = UriBuilder.fromUri(URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/rates"))
+                            .queryParam("currencyPairs", String.join(",", currencyPairs))
+                            .queryParam("fxRateTenor", fxRateTenor)
+                            .build();
         HttpRequest request = HttpRequest.newBuilder(uri)
                                          .setHeader("Authorization", getAccessToken().toString())
                                          .setHeader("Accept", "application/json")

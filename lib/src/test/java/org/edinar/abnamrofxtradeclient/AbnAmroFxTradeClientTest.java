@@ -2,6 +2,9 @@ package org.edinar.abnamrofxtradeclient;
 
 import java.io.IOException;
 import java.util.Set;
+import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
+import org.edinar.abnamrofxtradeclient.entities.Rate;
+import org.edinar.abnamrofxtradeclient.entities.SwapPoints;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -62,5 +65,35 @@ public class AbnAmroFxTradeClientTest {
         Set<String> settlementAccountGroups = client.getSettlementAccountGroups();
         Assertions.assertTrue(settlementAccountGroups.contains("Client Account"));
         Assertions.assertTrue(settlementAccountGroups.contains("House Account"));
+    }
+
+    @Test
+    public void testGetIndicativeRates() throws InterruptedException, IOException {
+        Set<String> currencyPairs = Set.of("EURJPY", "EURGBP", "EURUSD");
+        Set<IndicativeRate> indicativeRates = client.getIndicativeRates(currencyPairs, "ASAP");
+        Assertions.assertEquals(3, indicativeRates.size());
+        for (IndicativeRate indicativeRate : indicativeRates) {
+            Assertions.assertNotNull(indicativeRate.getCurrencyPair());
+            Rate spotRate = indicativeRate.getSpotRate();
+            if (spotRate != null) {
+                Assertions.assertNotNull(spotRate.getAskRate());
+                Assertions.assertNotNull(spotRate.getBidRate());
+                Assertions.assertNotNull(spotRate.getMidRate());
+                Assertions.assertNotNull(spotRate.getEffectiveDateTime());
+            }
+            Rate allInRate = indicativeRate.getAllInRate();
+            if (allInRate != null) {
+                Assertions.assertNotNull(allInRate.getAskRate());
+                Assertions.assertNotNull(allInRate.getBidRate());
+                Assertions.assertNotNull(allInRate.getMidRate());
+                Assertions.assertNotNull(allInRate.getEffectiveDateTime());
+            }
+            SwapPoints swapPoints = indicativeRate.getSwapPoints();
+            if (swapPoints != null) {
+                Assertions.assertNotNull(swapPoints.getAskPoints());
+                Assertions.assertNotNull(swapPoints.getBidPoints());
+            }
+            Assertions.assertNotNull(indicativeRate.getSettlementDate());
+        }
     }
 }
