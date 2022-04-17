@@ -240,7 +240,7 @@ public class AbnAmroFxTradeClientTest {
     }
 
     private BigDecimal getRandomAmount() {
-        float randomValue = new Random().nextFloat(1000f, 9999.99f);
+        float randomValue = (new Random().nextFloat() % 10000) + 1000;
         return new BigDecimal(Float.toString(randomValue)).setScale(2, RoundingMode.HALF_UP);
     }
 }
