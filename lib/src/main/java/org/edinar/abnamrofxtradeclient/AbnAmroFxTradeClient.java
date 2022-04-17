@@ -60,7 +60,7 @@ public class AbnAmroFxTradeClient {
         return doGet(new TypeReference<>(){}, uri);
     }
 
-    public ConversionCalculationResponse performConversionCalculations(Set<ConversionCalculationRequest> conversionCalculationRequests) throws InterruptedException, IOException {
+    public ConversionCalculationResponse postConversionCalculations(Set<ConversionCalculationRequest> conversionCalculationRequests) throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/conversioncalculations");
         String data = objectMapper.writeValueAsString(conversionCalculationRequests);
         return doPost(new TypeReference<>(){}, uri, data);
