@@ -33,40 +33,19 @@ public class AbnAmroFxTradeClient {
 
     public Set<String> getAllowedCurrencyPairs() throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/allowedcurrencypairs");
-        HttpRequest request = HttpRequest.newBuilder(uri)
-                                         .setHeader("Authorization", getAccessToken().toString())
-                                         .setHeader("Accept", "application/json")
-                                         .setHeader("API-Key", secretManager.getApiKey())
-                                         .GET()
-                                         .build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return objectMapper.readValue(response.body(), new TypeReference<>(){});
+        return doGet(new TypeReference<Set<String>>(){}, uri);
     }
 
     public Set<String> getAllowedCurrencyPairsBySettlementAccountGroup(String settlementAccountGroup) throws InterruptedException, IOException {
         URI uri = UriBuilder.fromUri(URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/allowedcurrencypairs"))
                             .queryParam("settlementAccountGroup", settlementAccountGroup)
                             .build();
-        HttpRequest request = HttpRequest.newBuilder(uri)
-                                         .setHeader("Authorization", getAccessToken().toString())
-                                         .setHeader("Accept", "application/json")
-                                         .setHeader("API-Key", secretManager.getApiKey())
-                                         .GET()
-                                         .build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return objectMapper.readValue(response.body(), new TypeReference<>(){});
+        return doGet(new TypeReference<Set<String>>(){}, uri);
     }
 
     public Set<String> getSettlementAccountGroups() throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/settlementaccountgroups");
-        HttpRequest request = HttpRequest.newBuilder(uri)
-                                         .setHeader("Authorization", getAccessToken().toString())
-                                         .setHeader("Accept", "application/json")
-                                         .setHeader("API-Key", secretManager.getApiKey())
-                                         .GET()
-                                         .build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return objectMapper.readValue(response.body(), new TypeReference<>(){});
+        return doGet(new TypeReference<Set<String>>(){}, uri);
     }
 
     public Set<IndicativeRate> getIndicativeRates(Set<String> currencyPairs, String fxRateTenor) throws InterruptedException, IOException {
@@ -74,6 +53,10 @@ public class AbnAmroFxTradeClient {
                             .queryParam("currencyPairs", String.join(",", currencyPairs))
                             .queryParam("fxRateTenor", fxRateTenor)
                             .build();
+        return doGet(new TypeReference<Set<IndicativeRate>>(){}, uri);
+    }
+
+    private <T> T doGet(TypeReference<T> typeReference, URI uri) throws InterruptedException, IOException {
         HttpRequest request = HttpRequest.newBuilder(uri)
                                          .setHeader("Authorization", getAccessToken().toString())
                                          .setHeader("Accept", "application/json")
@@ -81,7 +64,7 @@ public class AbnAmroFxTradeClient {
                                          .GET()
                                          .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        return objectMapper.readValue(response.body(), new TypeReference<>(){});
+        return objectMapper.readValue(response.body(), typeReference);
     }
 
     protected AbnAmroAccessToken getAccessToken() throws InterruptedException, IOException {
