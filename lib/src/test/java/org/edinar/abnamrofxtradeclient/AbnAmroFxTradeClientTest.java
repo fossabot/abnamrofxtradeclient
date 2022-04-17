@@ -12,11 +12,14 @@ import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
 import org.edinar.abnamrofxtradeclient.entities.OrderRequest;
 import org.edinar.abnamrofxtradeclient.entities.OrderRequestItem;
 import org.edinar.abnamrofxtradeclient.entities.OrderResponse;
+import org.edinar.abnamrofxtradeclient.entities.OrderStatus;
 import org.edinar.abnamrofxtradeclient.entities.QuoteRequest;
 import org.edinar.abnamrofxtradeclient.entities.QuoteRequestItem;
 import org.edinar.abnamrofxtradeclient.entities.QuoteResponse;
 import org.edinar.abnamrofxtradeclient.entities.Rate;
+import org.edinar.abnamrofxtradeclient.entities.SettlementAccountGroup;
 import org.edinar.abnamrofxtradeclient.entities.SwapPoints;
+import org.edinar.abnamrofxtradeclient.entities.Tenor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -53,7 +56,7 @@ public class AbnAmroFxTradeClientTest {
 
     @Test
     public void testGetAllowedCurrencyPairsForClientAccount() throws InterruptedException, IOException {
-        Set<String> currencyPairs = client.getAllowedCurrencyPairsBySettlementAccountGroup("Client Account");
+        Set<String> currencyPairs = client.getAllowedCurrencyPairsBySettlementAccountGroup(SettlementAccountGroup.CLIENT_ACCOUNT.toString());
         Assertions.assertTrue(currencyPairs.contains("EURGBP"));
         Assertions.assertTrue(currencyPairs.contains("EURJPY"));
         Assertions.assertTrue(currencyPairs.contains("EURUSD"));
@@ -62,7 +65,7 @@ public class AbnAmroFxTradeClientTest {
 
     @Test
     public void testGetAllowedCurrencyPairsForHouseAccount() throws InterruptedException, IOException {
-        Set<String> currencyPairs = client.getAllowedCurrencyPairsBySettlementAccountGroup("House Account");
+        Set<String> currencyPairs = client.getAllowedCurrencyPairsBySettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
         Assertions.assertTrue(currencyPairs.contains("GBPUSD"));
         Assertions.assertTrue(currencyPairs.contains("GBPJPY"));
         Assertions.assertTrue(currencyPairs.contains("USDCAD"));
@@ -71,14 +74,14 @@ public class AbnAmroFxTradeClientTest {
     @Test
     public void testGetSettlementAccountGroups() throws InterruptedException, IOException {
         Set<String> settlementAccountGroups = client.getSettlementAccountGroups();
-        Assertions.assertTrue(settlementAccountGroups.contains("Client Account"));
-        Assertions.assertTrue(settlementAccountGroups.contains("House Account"));
+        Assertions.assertTrue(settlementAccountGroups.contains(SettlementAccountGroup.CLIENT_ACCOUNT.toString()));
+        Assertions.assertTrue(settlementAccountGroups.contains(SettlementAccountGroup.HOUSE_ACCOUNT.toString()));
     }
 
     @Test
     public void testGetIndicativeRates() throws InterruptedException, IOException {
         Set<String> currencyPairs = Set.of("EURJPY", "EURGBP", "EURUSD");
-        Set<IndicativeRate> indicativeRates = client.getIndicativeRates(currencyPairs, "ASAP");
+        Set<IndicativeRate> indicativeRates = client.getIndicativeRates(currencyPairs, Tenor.ASAP.toString());
         Assertions.assertEquals(3, indicativeRates.size());
         for (IndicativeRate indicativeRate : indicativeRates) {
             Assertions.assertNotNull(indicativeRate.getCurrencyPair());
@@ -149,10 +152,10 @@ public class AbnAmroFxTradeClientTest {
         quoteRequestItem.setBuyCurrency("EUR");
         quoteRequestItem.setSellCurrency("USD");
         quoteRequestItem.setSellAmount(getRandomAmount());
-        quoteRequestItem.setSettlement("ASAP");
+        quoteRequestItem.setSettlement(Tenor.ASAP.toString());
         quoteRequest.setQuoteRequest(quoteRequestItem);
         quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
-        quoteRequest.setSettlementAccountGroup("House Account");
+        quoteRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
         QuoteResponse quoteResponse = client.postQuote(quoteRequest);
         Assertions.assertNotNull(quoteResponse.getQuoteId());
         Assertions.assertNotNull(quoteResponse.getSubmittedDateTime());
@@ -198,7 +201,7 @@ public class AbnAmroFxTradeClientTest {
         quoteRequestItem.setSettlement("2025-12-25P"); // Bank holiday
         quoteRequest.setQuoteRequest(quoteRequestItem);
         quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
-        quoteRequest.setSettlementAccountGroup("House Account");
+        quoteRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
         QuoteResponse quoteResponse = client.postQuote(quoteRequest);
         Assertions.assertEquals("2025-12-24", quoteResponse.getSettlementDate());
     }
@@ -212,10 +215,10 @@ public class AbnAmroFxTradeClientTest {
         quoteRequestItem.setBuyCurrency("EUR");
         quoteRequestItem.setBuyAmount(buyAmount);
         quoteRequestItem.setSellCurrency("USD");
-        quoteRequestItem.setSettlement("ASAP");
+        quoteRequestItem.setSettlement(Tenor.ASAP.toString());
         quoteRequest.setQuoteRequest(quoteRequestItem);
         quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
-        quoteRequest.setSettlementAccountGroup("House Account");
+        quoteRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
         QuoteResponse quoteResponse = client.postQuote(quoteRequest);
         System.out.printf("Buying (%s, %.2f) for (%s, %.2f) at rate (%f)\n",
                           quoteRequestItem.getBuyCurrency(),
@@ -229,12 +232,12 @@ public class AbnAmroFxTradeClientTest {
         orderRequestItem.setBuyCurrency("EUR");
         orderRequestItem.setBuyAmount(buyAmount);
         orderRequestItem.setSellCurrency("USD");
-        orderRequestItem.setSettlement("ASAP");
+        orderRequestItem.setSettlement(Tenor.ASAP.toString());
         orderRequest.setOrderRequest(orderRequestItem);
-        orderRequest.setSettlementAccountGroup("House Account");
+        orderRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
         orderRequest.setQuoteSignature(quoteResponse.getQuoteSignature());
         OrderResponse orderResponse = client.postOrder(orderRequest);
-        Assertions.assertEquals("FILLED", orderResponse.getOrderStatus(), "Order was not filled.");
+        Assertions.assertEquals(OrderStatus.FILLED.toString(), orderResponse.getOrderStatus(), "Order was not filled.");
         Assertions.assertEquals("EURUSD", orderResponse.getCurrencyPair(), "Unexpected currency pair.");
         Assertions.assertEquals(quoteResponse.getQuoteId(), orderResponse.getQuoteId(), "Quote ID changed.");
     }
