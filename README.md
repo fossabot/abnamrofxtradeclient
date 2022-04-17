@@ -1,4 +1,6 @@
 # ABN AMRO FX Trade API Client Library
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fedinarorg%2Fabnamrofxtradeclient.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fedinarorg%2Fabnamrofxtradeclient?ref=badge_shield)
+
 An open-source Java client library for the ABN AMRO FX Trade API. 
 
 ## Functionality
@@ -22,3 +24,7 @@ See [`build.gradle.kts`](https://github.com/edinarorg/abnamrofxtradeclient/blob/
 |:---|:---|:---|
 |`org.glassfish.jersey.core`|`jersey-client`|`3.0.4`|
 |`com.fasterxml.jackson.core`|`jackson-databind`|`2.13.2.2`|
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fedinarorg%2Fabnamrofxtradeclient.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fedinarorg%2Fabnamrofxtradeclient?ref=badge_large)
