@@ -1,7 +1,10 @@
 package org.edinar.abnamrofxtradeclient;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Set;
+import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationRequest;
+import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationResponse;
 import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
 import org.edinar.abnamrofxtradeclient.entities.Rate;
 import org.edinar.abnamrofxtradeclient.entities.SwapPoints;
@@ -95,5 +98,42 @@ public class AbnAmroFxTradeClientTest {
             }
             Assertions.assertNotNull(indicativeRate.getSettlementDate());
         }
+    }
+
+    @Test
+    public void testPerformConversionCalculationsBuy() throws InterruptedException, IOException {
+        ConversionCalculationRequest request = new ConversionCalculationRequest();
+        request.setCalculationId(1L);
+        request.setBuyCurrency("GBP");
+        request.setBuyAmount(new BigDecimal("1234.56"));
+        request.setSellCurrency("EUR");
+        ConversionCalculationResponse response = client.performConversionCalculations(Set.of(request));
+        Assertions.assertEquals(1, response.getConversions().size());
+        Assertions.assertTrue(response.getFailures().isEmpty());
+    }
+
+    @Test
+    public void testPerformConversationCalculationsSell() throws InterruptedException, IOException {
+        ConversionCalculationRequest request = new ConversionCalculationRequest();
+        request.setCalculationId(2L);
+        request.setBuyCurrency("GBP");
+        request.setSellCurrency("USD");
+        request.setSellAmount(new BigDecimal("1000.00"));
+        ConversionCalculationResponse response = client.performConversionCalculations(Set.of(request));
+        Assertions.assertEquals(1, response.getConversions().size());
+        Assertions.assertTrue(response.getFailures().isEmpty());
+    }
+
+    @Test
+    public void testPerformConversationCalculationsInvalid() throws InterruptedException, IOException {
+        ConversionCalculationRequest request = new ConversionCalculationRequest();
+        request.setCalculationId(2L);
+        request.setBuyCurrency("GBP");
+        request.setBuyAmount(new BigDecimal("1000.00"));
+        request.setSellCurrency("USD");
+        request.setSellAmount(new BigDecimal("1000.00"));
+        ConversionCalculationResponse response = client.performConversionCalculations(Set.of(request));
+        Assertions.assertEquals(1, response.getFailures().size());
+        Assertions.assertTrue(response.getConversions().isEmpty());
     }
 }

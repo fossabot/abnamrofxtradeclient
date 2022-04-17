@@ -1,6 +1,7 @@
 package org.edinar.abnamrofxtradeclient;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -11,6 +12,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Set;
+import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationRequest;
+import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationResponse;
 import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
 
 public class AbnAmroFxTradeClient {
@@ -21,7 +24,7 @@ public class AbnAmroFxTradeClient {
     private final SecretManager secretManager;
 
     public AbnAmroFxTradeClient(AbnAmroEnvironment environment, SecretManager secretManager) {
-        this(HttpClient.newHttpClient(), new ObjectMapper(), environment, secretManager);
+        this(HttpClient.newHttpClient(), new AbnAmroObjectMapper(), environment, secretManager);
     }
 
     public AbnAmroFxTradeClient(HttpClient httpClient, ObjectMapper objectMapper, AbnAmroEnvironment environment, SecretManager secretManager) {
@@ -56,12 +59,30 @@ public class AbnAmroFxTradeClient {
         return doGet(new TypeReference<Set<IndicativeRate>>(){}, uri);
     }
 
+    public ConversionCalculationResponse performConversionCalculations(Set<ConversionCalculationRequest> conversionCalculationRequests) throws InterruptedException, IOException {
+        URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/conversioncalculations");
+        String data = objectMapper.writeValueAsString(conversionCalculationRequests);
+        return doPost(new TypeReference<ConversionCalculationResponse>(){}, uri, data);
+    }
+
     private <T> T doGet(TypeReference<T> typeReference, URI uri) throws InterruptedException, IOException {
         HttpRequest request = HttpRequest.newBuilder(uri)
                                          .setHeader("Authorization", getAccessToken().toString())
                                          .setHeader("Accept", "application/json")
                                          .setHeader("API-Key", secretManager.getApiKey())
                                          .GET()
+                                         .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return objectMapper.readValue(response.body(), typeReference);
+    }
+
+    private <T> T doPost(TypeReference<T> typeReference, URI uri, String data) throws InterruptedException, IOException {
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                                         .setHeader("Authorization", getAccessToken().toString())
+                                         .setHeader("Accept", "application/json")
+                                         .setHeader("Content-Type", "application/json")
+                                         .setHeader("API-Key", secretManager.getApiKey())
+                                         .POST(HttpRequest.BodyPublishers.ofString(data))
                                          .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         return objectMapper.readValue(response.body(), typeReference);
