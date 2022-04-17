@@ -2,6 +2,7 @@ package org.edinar.abnamrofxtradeclient;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -31,6 +32,20 @@ public class AbnAmroFxTradeClient {
 
     public Set<String> getAllowedCurrencyPairs() throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/allowedcurrencypairs");
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                                         .setHeader("Authorization", getAccessToken().toString())
+                                         .setHeader("Accept", "application/json")
+                                         .setHeader("API-Key", secretManager.getApiKey())
+                                         .GET()
+                                         .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return objectMapper.readValue(response.body(), new TypeReference<>(){});
+    }
+
+    public Set<String> getAllowedCurrencyPairsBySettlementAccountGroup(String settlementAccountGroup) throws InterruptedException, IOException {
+        URI uri = UriBuilder.fromUri(URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/allowedcurrencypairs"))
+                            .queryParam("settlementAccountGroup", settlementAccountGroup)
+                            .build();
         HttpRequest request = HttpRequest.newBuilder(uri)
                                          .setHeader("Authorization", getAccessToken().toString())
                                          .setHeader("Accept", "application/json")

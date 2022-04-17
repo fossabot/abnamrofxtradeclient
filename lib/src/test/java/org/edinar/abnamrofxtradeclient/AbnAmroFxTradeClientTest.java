@@ -41,6 +41,23 @@ public class AbnAmroFxTradeClientTest {
     }
 
     @Test
+    public void testGetAllowedCurrencyPairsForClientAccount() throws InterruptedException, IOException {
+        Set<String> currencyPairs = client.getAllowedCurrencyPairsBySettlementAccountGroup("Client Account");
+        Assertions.assertTrue(currencyPairs.contains("EURGBP"));
+        Assertions.assertTrue(currencyPairs.contains("EURJPY"));
+        Assertions.assertTrue(currencyPairs.contains("EURUSD"));
+        Assertions.assertFalse(currencyPairs.contains("GBPUSD"));
+    }
+
+    @Test
+    public void testGetAllowedCurrencyPairsForHouseAccount() throws InterruptedException, IOException {
+        Set<String> currencyPairs = client.getAllowedCurrencyPairsBySettlementAccountGroup("House Account");
+        Assertions.assertTrue(currencyPairs.contains("GBPUSD"));
+        Assertions.assertTrue(currencyPairs.contains("GBPJPY"));
+        Assertions.assertTrue(currencyPairs.contains("USDCAD"));
+    }
+
+    @Test
     public void testGetSettlementAccountGroups() throws InterruptedException, IOException {
         Set<String> settlementAccountGroups = client.getSettlementAccountGroups();
         Assertions.assertTrue(settlementAccountGroups.contains("Client Account"));

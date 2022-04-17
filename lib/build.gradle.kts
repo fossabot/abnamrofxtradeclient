@@ -17,10 +17,9 @@ repositories {
 }
 
 dependencies {
-    // Use JUnit Jupiter for testing.
+    implementation("org.glassfish.jersey.core:jersey-client:3.0.4")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.2.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
-
-    implementation ("com.fasterxml.jackson.core:jackson-databind:2.13.2.2")
 }
 
 tasks.named<Test>("test") {
