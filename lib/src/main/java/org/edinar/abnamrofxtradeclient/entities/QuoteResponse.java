@@ -21,7 +21,7 @@ public class QuoteResponse {
     private Rate allInRate;
     private BigDecimal contraAmount;
     private BigDecimal rate;
-    private Date settlementDate;
+    private String settlementDate;
     private String quoteSignature;
 
     public String getQuoteId() {
@@ -160,11 +160,11 @@ public class QuoteResponse {
         this.rate = rate;
     }
 
-    public Date getSettlementDate() {
+    public String getSettlementDate() {
         return settlementDate;
     }
 
-    public void setSettlementDate(Date settlementDate) {
+    public void setSettlementDate(String settlementDate) {
         this.settlementDate = settlementDate;
     }
 

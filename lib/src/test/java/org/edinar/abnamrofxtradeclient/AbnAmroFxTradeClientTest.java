@@ -12,7 +12,7 @@ import org.edinar.abnamrofxtradeclient.entities.QuoteResponse;
 import org.edinar.abnamrofxtradeclient.entities.Rate;
 import org.edinar.abnamrofxtradeclient.entities.SwapPoints;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -23,16 +23,12 @@ import org.junit.jupiter.api.Test;
  */
 @Disabled
 public class AbnAmroFxTradeClientTest {
-    private AbnAmroFxTradeClient client;
+    private static AbnAmroFxTradeClient client;
 
-    @BeforeEach
-    public void setup() throws IOException {
+    @BeforeAll
+    public static void setup() throws InterruptedException, IOException {
         client = new AbnAmroFxTradeClient(AbnAmroEnvironment.SANDBOX,
                                           new SimpleSecretManager());
-    }
-
-    @Test
-    public void testGetAccessToken() throws InterruptedException, IOException {
         AbnAmroAccessToken accessToken = client.getAccessToken();
         Assertions.assertNotNull(accessToken);
         Assertions.assertEquals("3599", accessToken.getExpiresIn());
@@ -184,5 +180,20 @@ public class AbnAmroFxTradeClientTest {
         Assertions.assertNotNull(quoteResponse.getRate());
         Assertions.assertNotNull(quoteResponse.getSettlementDate());
         Assertions.assertNotNull(quoteResponse.getQuoteSignature());
+    }
+
+    @Test
+    public void testPostQuoteWithBrokenDate() throws InterruptedException, IOException {
+        QuoteRequest quoteRequest = new QuoteRequest();
+        QuoteRequestItem quoteRequestItem = new QuoteRequestItem();
+        quoteRequestItem.setBuyCurrency("EUR");
+        quoteRequestItem.setSellCurrency("USD");
+        quoteRequestItem.setSellAmount(new BigDecimal("10000.00"));
+        quoteRequestItem.setSettlement("2025-12-25P"); // Bank holiday
+        quoteRequest.setQuoteRequest(quoteRequestItem);
+        quoteRequest.setConsumerQuoteReference("FWD_2022-04-17_2");
+        quoteRequest.setSettlementAccountGroup("House Account");
+        QuoteResponse quoteResponse = client.postQuote(quoteRequest);
+        Assertions.assertEquals("2025-12-24", quoteResponse.getSettlementDate());
     }
 }
