@@ -79,9 +79,9 @@ public class AbnAmroFxTradeClientTest {
     }
 
     @Test
-    public void testGetIndicativeRates() throws InterruptedException, IOException {
+    public void testGetFxRates() throws InterruptedException, IOException {
         Set<String> currencyPairs = Set.of("EURJPY", "EURGBP", "EURUSD");
-        Set<IndicativeRate> indicativeRates = client.getIndicativeRates(currencyPairs, Tenor.ASAP.toString());
+        Set<IndicativeRate> indicativeRates = client.getFxRates(currencyPairs, Tenor.ASAP.toString());
         Assertions.assertEquals(3, indicativeRates.size());
         for (IndicativeRate indicativeRate : indicativeRates) {
             Assertions.assertNotNull(indicativeRate.getCurrencyPair());
@@ -109,44 +109,44 @@ public class AbnAmroFxTradeClientTest {
     }
 
     @Test
-    public void testPostConversionCalculationsBuy() throws InterruptedException, IOException {
+    public void testPerformConversionCalculationsBuy() throws InterruptedException, IOException {
         ConversionCalculationRequest request = new ConversionCalculationRequest();
         request.setCalculationId(1L);
         request.setBuyCurrency("GBP");
         request.setBuyAmount(getRandomAmount());
         request.setSellCurrency("EUR");
-        ConversionCalculationResponse response = client.postConversionCalculations(Set.of(request));
+        ConversionCalculationResponse response = client.performConversionCalculations(Set.of(request));
         Assertions.assertEquals(1, response.getConversions().size());
         Assertions.assertTrue(response.getFailures().isEmpty());
     }
 
     @Test
-    public void testPostConversionCalculationsSell() throws InterruptedException, IOException {
+    public void testPerformConversionCalculationsSell() throws InterruptedException, IOException {
         ConversionCalculationRequest request = new ConversionCalculationRequest();
         request.setCalculationId(2L);
         request.setBuyCurrency("GBP");
         request.setSellCurrency("USD");
         request.setSellAmount(getRandomAmount());
-        ConversionCalculationResponse response = client.postConversionCalculations(Set.of(request));
+        ConversionCalculationResponse response = client.performConversionCalculations(Set.of(request));
         Assertions.assertEquals(1, response.getConversions().size());
         Assertions.assertTrue(response.getFailures().isEmpty());
     }
 
     @Test
-    public void testPostConversionCalculationsInvalid() throws InterruptedException, IOException {
+    public void testPerformConversionCalculationsInvalid() throws InterruptedException, IOException {
         ConversionCalculationRequest request = new ConversionCalculationRequest();
         request.setCalculationId(2L);
         request.setBuyCurrency("GBP");
         request.setBuyAmount(new BigDecimal("1000.00"));
         request.setSellCurrency("USD");
         request.setSellAmount(new BigDecimal("1000.00"));
-        ConversionCalculationResponse response = client.postConversionCalculations(Set.of(request));
+        ConversionCalculationResponse response = client.performConversionCalculations(Set.of(request));
         Assertions.assertEquals(1, response.getFailures().size());
         Assertions.assertTrue(response.getConversions().isEmpty());
     }
 
     @Test
-    public void testPostQuoteWithStandardTenor() throws InterruptedException, IOException {
+    public void testCreateFxQuoteWithStandardTenor() throws InterruptedException, IOException {
         QuoteRequest quoteRequest = new QuoteRequest();
         QuoteRequestItem quoteRequestItem = new QuoteRequestItem();
         quoteRequestItem.setBuyCurrency("EUR");
@@ -156,7 +156,7 @@ public class AbnAmroFxTradeClientTest {
         quoteRequest.setQuoteRequest(quoteRequestItem);
         quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
         quoteRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
-        QuoteResponse quoteResponse = client.postQuote(quoteRequest);
+        QuoteResponse quoteResponse = client.createFxQuote(quoteRequest);
         Assertions.assertNotNull(quoteResponse.getQuoteId());
         Assertions.assertNotNull(quoteResponse.getSubmittedDateTime());
         Assertions.assertNotNull(quoteResponse.getQuoteStatus());
@@ -192,7 +192,7 @@ public class AbnAmroFxTradeClientTest {
     }
 
     @Test
-    public void testPostQuoteWithBrokenDate() throws InterruptedException, IOException {
+    public void testCreateFxQuoteWithBrokenDate() throws InterruptedException, IOException {
         QuoteRequest quoteRequest = new QuoteRequest();
         QuoteRequestItem quoteRequestItem = new QuoteRequestItem();
         quoteRequestItem.setBuyCurrency("EUR");
@@ -202,12 +202,12 @@ public class AbnAmroFxTradeClientTest {
         quoteRequest.setQuoteRequest(quoteRequestItem);
         quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
         quoteRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
-        QuoteResponse quoteResponse = client.postQuote(quoteRequest);
+        QuoteResponse quoteResponse = client.createFxQuote(quoteRequest);
         Assertions.assertEquals("2025-12-24", quoteResponse.getSettlementDate());
     }
 
     @Test
-    public void testPostOrder() throws InterruptedException, IOException {
+    public void testCreateFxOrder() throws InterruptedException, IOException {
         BigDecimal buyAmount = getRandomAmount();
         // 1. Get quote
         QuoteRequest quoteRequest = new QuoteRequest();
@@ -219,7 +219,7 @@ public class AbnAmroFxTradeClientTest {
         quoteRequest.setQuoteRequest(quoteRequestItem);
         quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
         quoteRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
-        QuoteResponse quoteResponse = client.postQuote(quoteRequest);
+        QuoteResponse quoteResponse = client.createFxQuote(quoteRequest);
         System.out.printf("Buying (%s, %.2f) for (%s, %.2f) at rate (%f)\n",
                           quoteRequestItem.getBuyCurrency(),
                           quoteRequestItem.getBuyAmount().doubleValue(),
@@ -236,7 +236,7 @@ public class AbnAmroFxTradeClientTest {
         orderRequest.setOrderRequest(orderRequestItem);
         orderRequest.setSettlementAccountGroup(SettlementAccountGroup.HOUSE_ACCOUNT.toString());
         orderRequest.setQuoteSignature(quoteResponse.getQuoteSignature());
-        OrderResponse orderResponse = client.postOrder(orderRequest);
+        OrderResponse orderResponse = client.createFxOrder(orderRequest);
         Assertions.assertEquals(OrderStatus.FILLED.toString(), orderResponse.getOrderStatus(), "Order was not filled.");
         Assertions.assertEquals("EURUSD", orderResponse.getCurrencyPair(), "Unexpected currency pair.");
         Assertions.assertEquals(quoteResponse.getQuoteId(), orderResponse.getQuoteId(), "Quote ID changed.");

@@ -54,7 +54,7 @@ public class AbnAmroFxTradeClient {
         return doGet(new TypeReference<>(){}, uri);
     }
 
-    public Set<IndicativeRate> getIndicativeRates(Set<String> currencyPairs, String fxRateTenor) throws InterruptedException, IOException {
+    public Set<IndicativeRate> getFxRates(Set<String> currencyPairs, String fxRateTenor) throws InterruptedException, IOException {
         URI uri = UriBuilder.fromUri(URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/rates"))
                             .queryParam("currencyPairs", String.join(",", currencyPairs))
                             .queryParam("fxRateTenor", fxRateTenor)
@@ -62,19 +62,19 @@ public class AbnAmroFxTradeClient {
         return doGet(new TypeReference<>(){}, uri);
     }
 
-    public ConversionCalculationResponse postConversionCalculations(Set<ConversionCalculationRequest> conversionCalculationRequests) throws InterruptedException, IOException {
+    public ConversionCalculationResponse performConversionCalculations(Set<ConversionCalculationRequest> conversionCalculationRequests) throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/conversioncalculations");
         String data = objectMapper.writeValueAsString(conversionCalculationRequests);
         return doPost(new TypeReference<>(){}, uri, data);
     }
 
-    public QuoteResponse postQuote(QuoteRequest quoteRequest) throws InterruptedException, IOException {
+    public QuoteResponse createFxQuote(QuoteRequest quoteRequest) throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/quotes");
         String data = objectMapper.writeValueAsString(quoteRequest);
         return doPost(new TypeReference<>(){}, uri, data);
     }
 
-    public OrderResponse postOrder(OrderRequest orderRequest) throws InterruptedException, IOException {
+    public OrderResponse createFxOrder(OrderRequest orderRequest) throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/orders");
         String data = objectMapper.writeValueAsString(orderRequest);
         return doPost(new TypeReference<>(){}, uri, data);
