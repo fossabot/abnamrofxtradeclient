@@ -1,7 +1,6 @@
 package org.edinar.abnamrofxtradeclient;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -36,19 +35,19 @@ public class AbnAmroFxTradeClient {
 
     public Set<String> getAllowedCurrencyPairs() throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/allowedcurrencypairs");
-        return doGet(new TypeReference<Set<String>>(){}, uri);
+        return doGet(new TypeReference<>(){}, uri);
     }
 
     public Set<String> getAllowedCurrencyPairsBySettlementAccountGroup(String settlementAccountGroup) throws InterruptedException, IOException {
         URI uri = UriBuilder.fromUri(URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/allowedcurrencypairs"))
                             .queryParam("settlementAccountGroup", settlementAccountGroup)
                             .build();
-        return doGet(new TypeReference<Set<String>>(){}, uri);
+        return doGet(new TypeReference<>(){}, uri);
     }
 
     public Set<String> getSettlementAccountGroups() throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/settlementaccountgroups");
-        return doGet(new TypeReference<Set<String>>(){}, uri);
+        return doGet(new TypeReference<>(){}, uri);
     }
 
     public Set<IndicativeRate> getIndicativeRates(Set<String> currencyPairs, String fxRateTenor) throws InterruptedException, IOException {
@@ -56,13 +55,13 @@ public class AbnAmroFxTradeClient {
                             .queryParam("currencyPairs", String.join(",", currencyPairs))
                             .queryParam("fxRateTenor", fxRateTenor)
                             .build();
-        return doGet(new TypeReference<Set<IndicativeRate>>(){}, uri);
+        return doGet(new TypeReference<>(){}, uri);
     }
 
     public ConversionCalculationResponse performConversionCalculations(Set<ConversionCalculationRequest> conversionCalculationRequests) throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/conversioncalculations");
         String data = objectMapper.writeValueAsString(conversionCalculationRequests);
-        return doPost(new TypeReference<ConversionCalculationResponse>(){}, uri, data);
+        return doPost(new TypeReference<>(){}, uri, data);
     }
 
     private <T> T doGet(TypeReference<T> typeReference, URI uri) throws InterruptedException, IOException {
