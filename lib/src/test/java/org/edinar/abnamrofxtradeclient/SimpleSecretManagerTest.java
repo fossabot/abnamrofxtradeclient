@@ -16,24 +16,24 @@ public class SimpleSecretManagerTest {
     @Test
     public void testGetApiKey() {
         String apiKey = secretManager.getApiKey();
-        Assertions.assertEquals("<YOUR_API_KEY>", apiKey);
+        Assertions.assertNotNull(apiKey);
     }
 
     @Test
     public void testGetUsername() {
         String username = secretManager.getUsername();
-        Assertions.assertEquals("FXAPI", username);
+        Assertions.assertNotNull(username);
     }
 
     @Test
     public void testGetPassword() {
         String password = secretManager.getPassword();
-        Assertions.assertEquals("z5l2KRWEXnmDvBhssPq7", password);
+        Assertions.assertNotNull(password);
     }
 
     @Test
     public void testGetScope() {
         String scope = secretManager.getScope();
-        Assertions.assertEquals("fxtrade:allowedcurrencypairs:read fxtrade:settlementaccountgroups:read fxtrade:rates:read fxtrade:conversioncalculations:write fxtrade:quotes:read fxtrade:quotes:write fxtrade:orders:read fxtrade:orders:write", scope);
+        Assertions.assertNotNull(scope);
     }
 }
