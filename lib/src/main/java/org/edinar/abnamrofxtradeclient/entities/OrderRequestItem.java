@@ -2,7 +2,7 @@ package org.edinar.abnamrofxtradeclient.entities;
 
 import java.math.BigDecimal;
 
-public class QuoteRequestItem {
+public class OrderRequestItem {
     private String buyCurrency;
     private BigDecimal buyAmount;
     private String sellCurrency;

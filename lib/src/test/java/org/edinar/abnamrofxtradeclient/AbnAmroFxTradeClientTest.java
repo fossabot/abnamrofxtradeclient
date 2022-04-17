@@ -2,10 +2,16 @@ package org.edinar.abnamrofxtradeclient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationRequest;
 import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationResponse;
 import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
+import org.edinar.abnamrofxtradeclient.entities.OrderRequest;
+import org.edinar.abnamrofxtradeclient.entities.OrderRequestItem;
+import org.edinar.abnamrofxtradeclient.entities.OrderResponse;
 import org.edinar.abnamrofxtradeclient.entities.QuoteRequest;
 import org.edinar.abnamrofxtradeclient.entities.QuoteRequestItem;
 import org.edinar.abnamrofxtradeclient.entities.QuoteResponse;
@@ -104,7 +110,7 @@ public class AbnAmroFxTradeClientTest {
         ConversionCalculationRequest request = new ConversionCalculationRequest();
         request.setCalculationId(1L);
         request.setBuyCurrency("GBP");
-        request.setBuyAmount(new BigDecimal("1234.56"));
+        request.setBuyAmount(getRandomAmount());
         request.setSellCurrency("EUR");
         ConversionCalculationResponse response = client.postConversionCalculations(Set.of(request));
         Assertions.assertEquals(1, response.getConversions().size());
@@ -117,7 +123,7 @@ public class AbnAmroFxTradeClientTest {
         request.setCalculationId(2L);
         request.setBuyCurrency("GBP");
         request.setSellCurrency("USD");
-        request.setSellAmount(new BigDecimal("1000.00"));
+        request.setSellAmount(getRandomAmount());
         ConversionCalculationResponse response = client.postConversionCalculations(Set.of(request));
         Assertions.assertEquals(1, response.getConversions().size());
         Assertions.assertTrue(response.getFailures().isEmpty());
@@ -142,10 +148,10 @@ public class AbnAmroFxTradeClientTest {
         QuoteRequestItem quoteRequestItem = new QuoteRequestItem();
         quoteRequestItem.setBuyCurrency("EUR");
         quoteRequestItem.setSellCurrency("USD");
-        quoteRequestItem.setSellAmount(new BigDecimal("25000.00"));
+        quoteRequestItem.setSellAmount(getRandomAmount());
         quoteRequestItem.setSettlement("ASAP");
         quoteRequest.setQuoteRequest(quoteRequestItem);
-        quoteRequest.setConsumerQuoteReference("ASAP_2022-04-17_160");
+        quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
         quoteRequest.setSettlementAccountGroup("House Account");
         QuoteResponse quoteResponse = client.postQuote(quoteRequest);
         Assertions.assertNotNull(quoteResponse.getQuoteId());
@@ -188,12 +194,53 @@ public class AbnAmroFxTradeClientTest {
         QuoteRequestItem quoteRequestItem = new QuoteRequestItem();
         quoteRequestItem.setBuyCurrency("EUR");
         quoteRequestItem.setSellCurrency("USD");
-        quoteRequestItem.setSellAmount(new BigDecimal("10000.00"));
+        quoteRequestItem.setSellAmount(getRandomAmount());
         quoteRequestItem.setSettlement("2025-12-25P"); // Bank holiday
         quoteRequest.setQuoteRequest(quoteRequestItem);
-        quoteRequest.setConsumerQuoteReference("FWD_2022-04-17_2");
+        quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
         quoteRequest.setSettlementAccountGroup("House Account");
         QuoteResponse quoteResponse = client.postQuote(quoteRequest);
         Assertions.assertEquals("2025-12-24", quoteResponse.getSettlementDate());
+    }
+
+    @Test
+    public void testPostOrder() throws InterruptedException, IOException {
+        BigDecimal buyAmount = getRandomAmount();
+        // 1. Get quote
+        QuoteRequest quoteRequest = new QuoteRequest();
+        QuoteRequestItem quoteRequestItem = new QuoteRequestItem();
+        quoteRequestItem.setBuyCurrency("EUR");
+        quoteRequestItem.setBuyAmount(buyAmount);
+        quoteRequestItem.setSellCurrency("USD");
+        quoteRequestItem.setSettlement("ASAP");
+        quoteRequest.setQuoteRequest(quoteRequestItem);
+        quoteRequest.setConsumerQuoteReference(UUID.randomUUID().toString());
+        quoteRequest.setSettlementAccountGroup("House Account");
+        QuoteResponse quoteResponse = client.postQuote(quoteRequest);
+        System.out.printf("Buying (%s, %.2f) for (%s, %.2f) at rate (%f)\n",
+                          quoteRequestItem.getBuyCurrency(),
+                          quoteRequestItem.getBuyAmount().doubleValue(),
+                          quoteResponse.getSellCurrency(),
+                          quoteResponse.getContraAmount(),
+                          quoteResponse.getRate());
+        // 2. Post order using the acquired quote
+        OrderRequest orderRequest = new OrderRequest();
+        OrderRequestItem orderRequestItem = new OrderRequestItem();
+        orderRequestItem.setBuyCurrency("EUR");
+        orderRequestItem.setBuyAmount(buyAmount);
+        orderRequestItem.setSellCurrency("USD");
+        orderRequestItem.setSettlement("ASAP");
+        orderRequest.setOrderRequest(orderRequestItem);
+        orderRequest.setSettlementAccountGroup("House Account");
+        orderRequest.setQuoteSignature(quoteResponse.getQuoteSignature());
+        OrderResponse orderResponse = client.postOrder(orderRequest);
+        Assertions.assertEquals("FILLED", orderResponse.getOrderStatus(), "Order was not filled.");
+        Assertions.assertEquals("EURUSD", orderResponse.getCurrencyPair(), "Unexpected currency pair.");
+        Assertions.assertEquals(quoteResponse.getQuoteId(), orderResponse.getQuoteId(), "Quote ID changed.");
+    }
+
+    private BigDecimal getRandomAmount() {
+        float randomValue = new Random().nextFloat(1000f, 9999.99f);
+        return new BigDecimal(Float.toString(randomValue)).setScale(2, RoundingMode.HALF_UP);
     }
 }

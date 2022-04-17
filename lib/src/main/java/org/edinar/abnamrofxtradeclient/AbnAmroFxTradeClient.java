@@ -14,6 +14,8 @@ import java.util.Set;
 import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationRequest;
 import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationResponse;
 import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
+import org.edinar.abnamrofxtradeclient.entities.OrderRequest;
+import org.edinar.abnamrofxtradeclient.entities.OrderResponse;
 import org.edinar.abnamrofxtradeclient.entities.QuoteRequest;
 import org.edinar.abnamrofxtradeclient.entities.QuoteResponse;
 
@@ -69,6 +71,12 @@ public class AbnAmroFxTradeClient {
     public QuoteResponse postQuote(QuoteRequest quoteRequest) throws InterruptedException, IOException {
         URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/quotes");
         String data = objectMapper.writeValueAsString(quoteRequest);
+        return doPost(new TypeReference<>(){}, uri, data);
+    }
+
+    public OrderResponse postOrder(OrderRequest orderRequest) throws InterruptedException, IOException {
+        URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/orders");
+        String data = objectMapper.writeValueAsString(orderRequest);
         return doPost(new TypeReference<>(){}, uri, data);
     }
 
