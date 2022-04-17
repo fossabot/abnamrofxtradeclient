@@ -41,6 +41,18 @@ public class AbnAmroFxTradeClient {
         return objectMapper.readValue(response.body(), new TypeReference<>(){});
     }
 
+    public Set<String> getSettlementAccountGroups() throws InterruptedException, IOException {
+        URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/settlementaccountgroups");
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                                         .setHeader("Authorization", getAccessToken().toString())
+                                         .setHeader("Accept", "application/json")
+                                         .setHeader("API-Key", secretManager.getApiKey())
+                                         .GET()
+                                         .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return objectMapper.readValue(response.body(), new TypeReference<>(){});
+    }
+
     protected AbnAmroAccessToken getAccessToken() throws InterruptedException, IOException {
         if (currentAccessToken == null) {
             return getNewAccessToken();

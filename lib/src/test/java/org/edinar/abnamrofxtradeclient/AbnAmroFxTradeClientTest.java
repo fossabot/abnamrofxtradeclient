@@ -39,4 +39,11 @@ public class AbnAmroFxTradeClientTest {
         Assertions.assertTrue(currencyPairs.contains("EURUSD"));
         Assertions.assertFalse(currencyPairs.contains("USDEUR"));
     }
+
+    @Test
+    public void testGetSettlementAccountGroups() throws InterruptedException, IOException {
+        Set<String> settlementAccountGroups = client.getSettlementAccountGroups();
+        Assertions.assertTrue(settlementAccountGroups.contains("Client Account"));
+        Assertions.assertTrue(settlementAccountGroups.contains("House Account"));
+    }
 }
