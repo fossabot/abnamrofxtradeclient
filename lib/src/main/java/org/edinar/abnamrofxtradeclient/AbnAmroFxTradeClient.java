@@ -1,5 +1,6 @@
 package org.edinar.abnamrofxtradeclient;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
@@ -8,6 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Set;
 
 public class AbnAmroFxTradeClient {
     private AbnAmroAccessToken currentAccessToken;
@@ -25,6 +27,18 @@ public class AbnAmroFxTradeClient {
         this.objectMapper = objectMapper;
         this.environment = environment;
         this.secretManager = secretManager;
+    }
+
+    public Set<String> getAllowedCurrencyPairs() throws InterruptedException, IOException {
+        URI uri = URI.create(environment.getApiBaseUrl() + "/v1/fxtrade/allowedcurrencypairs");
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                                         .setHeader("Authorization", getAccessToken().toString())
+                                         .setHeader("Accept", "application/json")
+                                         .setHeader("API-Key", secretManager.getApiKey())
+                                         .GET()
+                                         .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return objectMapper.readValue(response.body(), new TypeReference<>(){});
     }
 
     protected AbnAmroAccessToken getAccessToken() throws InterruptedException, IOException {

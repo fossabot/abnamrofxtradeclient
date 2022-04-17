@@ -1,6 +1,7 @@
 package org.edinar.abnamrofxtradeclient;
 
 import java.io.IOException;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.Test;
  * ABN AMRO sandbox environment. Remember to change the credentials in the
  * properties file before running this test.
  */
-//@Disabled
+@Disabled
 public class AbnAmroFxTradeClientTest {
     private AbnAmroFxTradeClient client;
 
@@ -30,5 +31,12 @@ public class AbnAmroFxTradeClientTest {
         Assertions.assertEquals(accessToken, client.getAccessToken(), "The current access token has NOT expired, but a new token was fetched.");
         accessToken.setExpiresIn("0"); // Simulate an expired token
         Assertions.assertNotEquals(accessToken, client.getAccessToken(), "The current token expired, but a new token was NOT fetched.");
+    }
+
+    @Test
+    public void testGetAllowedCurrencyPairs() throws InterruptedException, IOException {
+        Set<String> currencyPairs = client.getAllowedCurrencyPairs();
+        Assertions.assertTrue(currencyPairs.contains("EURUSD"));
+        Assertions.assertFalse(currencyPairs.contains("USDEUR"));
     }
 }
