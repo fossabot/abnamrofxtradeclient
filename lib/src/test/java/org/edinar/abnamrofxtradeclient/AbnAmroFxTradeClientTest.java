@@ -6,6 +6,9 @@ import java.util.Set;
 import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationRequest;
 import org.edinar.abnamrofxtradeclient.entities.ConversionCalculationResponse;
 import org.edinar.abnamrofxtradeclient.entities.IndicativeRate;
+import org.edinar.abnamrofxtradeclient.entities.QuoteRequest;
+import org.edinar.abnamrofxtradeclient.entities.QuoteRequestItem;
+import org.edinar.abnamrofxtradeclient.entities.QuoteResponse;
 import org.edinar.abnamrofxtradeclient.entities.Rate;
 import org.edinar.abnamrofxtradeclient.entities.SwapPoints;
 import org.junit.jupiter.api.Assertions;
@@ -135,5 +138,51 @@ public class AbnAmroFxTradeClientTest {
         ConversionCalculationResponse response = client.performConversionCalculations(Set.of(request));
         Assertions.assertEquals(1, response.getFailures().size());
         Assertions.assertTrue(response.getConversions().isEmpty());
+    }
+
+    @Test
+    public void testPostQuoteWithStandardTenor() throws InterruptedException, IOException {
+        QuoteRequest quoteRequest = new QuoteRequest();
+        QuoteRequestItem quoteRequestItem = new QuoteRequestItem();
+        quoteRequestItem.setBuyCurrency("EUR");
+        quoteRequestItem.setSellCurrency("USD");
+        quoteRequestItem.setSellAmount(new BigDecimal("25000.00"));
+        quoteRequestItem.setSettlement("ASAP");
+        quoteRequest.setQuoteRequest(quoteRequestItem);
+        quoteRequest.setConsumerQuoteReference("ASAP_2022-04-17_160");
+        quoteRequest.setSettlementAccountGroup("House Account");
+        QuoteResponse quoteResponse = client.postQuote(quoteRequest);
+        Assertions.assertNotNull(quoteResponse.getQuoteId());
+        Assertions.assertNotNull(quoteResponse.getSubmittedDateTime());
+        Assertions.assertNotNull(quoteResponse.getQuoteStatus());
+        Assertions.assertNotNull(quoteResponse.getExpirationDateTime());
+        Assertions.assertEquals(quoteRequest.getConsumerQuoteReference(), quoteResponse.getConsumerQuoteReference());
+        Assertions.assertEquals(quoteRequest.getQuoteRequest().getBuyCurrency(), quoteResponse.getBuyCurrency());
+        Assertions.assertEquals(quoteRequest.getQuoteRequest().getSellCurrency(), quoteResponse.getSellCurrency());
+        Assertions.assertEquals(quoteRequest.getQuoteRequest().getSellAmount(), quoteResponse.getSellAmount());
+        Assertions.assertEquals("EURUSD", quoteResponse.getCurrencyPair());
+        Rate spotRate = quoteResponse.getSpotRate();
+        if (spotRate != null) {
+            Assertions.assertNotNull(spotRate.getBidRate());
+            Assertions.assertNotNull(spotRate.getAskRate());
+            Assertions.assertNotNull(spotRate.getMidRate());
+            Assertions.assertNotNull(spotRate.getEffectiveDateTime());
+        }
+        SwapPoints swapPoints = quoteResponse.getSwapPoints();
+        if (swapPoints != null) {
+            Assertions.assertNotNull(swapPoints.getBidPoints());
+            Assertions.assertNotNull(swapPoints.getAskPoints());
+        }
+        Rate allInRate = quoteResponse.getAllInRate();
+        if (allInRate != null) {
+            Assertions.assertNotNull(allInRate.getBidRate());
+            Assertions.assertNotNull(allInRate.getAskRate());
+            Assertions.assertNotNull(allInRate.getMidRate());
+            Assertions.assertNotNull(allInRate.getEffectiveDateTime());
+        }
+        Assertions.assertNotNull(quoteResponse.getContraAmount());
+        Assertions.assertNotNull(quoteResponse.getRate());
+        Assertions.assertNotNull(quoteResponse.getSettlementDate());
+        Assertions.assertNotNull(quoteResponse.getQuoteSignature());
     }
 }
